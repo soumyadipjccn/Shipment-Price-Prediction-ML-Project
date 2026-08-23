@@ -96,3 +96,41 @@ class ModelTrainerConfig:
         self.TRAINED_MODEL_FILE_PATH: str = os.path.join(
             os.getcwd(), ARTIFACTS_DIR, MODEL_TRAINER_ARTIFACTS_DIR, MODEL_FILE_NAME
         )
+
+
+
+@dataclass
+class ModelEvaluationConfig:
+    def __init__(
+        self,
+        MODEL_EVALUATION_ARTIFACTS_DIR: str = None,
+        EVALUATION_REPORT_FILE_PATH: str = None,
+        CHANGED_THRESHOLD: float = None,
+        SCHEMA_CONFIG: dict = None,
+        UTILS: MainUtils = None,
+    ):
+        self.UTILS = UTILS if UTILS is not None else MainUtils()
+        self.SCHEMA_CONFIG = (
+            SCHEMA_CONFIG
+            if SCHEMA_CONFIG is not None
+            else self.UTILS.read_yaml_file(filename=SCHEMA_FILE_PATH)
+        )
+        self.MODEL_EVALUATION_ARTIFACTS_DIR: str = (
+            MODEL_EVALUATION_ARTIFACTS_DIR
+            if MODEL_EVALUATION_ARTIFACTS_DIR is not None
+            else os.path.join(os.getcwd(), ARTIFACTS_DIR, MODEL_EVALUATION_ARTIFACTS_DIR)
+        )
+        self.EVALUATION_REPORT_FILE_PATH: str = (
+            EVALUATION_REPORT_FILE_PATH
+            if EVALUATION_REPORT_FILE_PATH is not None
+            else os.path.join(
+                self.MODEL_EVALUATION_ARTIFACTS_DIR,
+                MODEL_EVALUATION_REPORT_FILE_NAME,
+            )
+        )
+        self.CHANGED_THRESHOLD: float = (
+            CHANGED_THRESHOLD
+            if CHANGED_THRESHOLD is not None
+            else MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE
+        )
+

@@ -12,7 +12,7 @@ ARTIFACTS_DIR = os.path.join(os.getcwd(), "artifacts", TIMESTAMP)
 MODEL_CONFIG_FILE = "config/model.yaml"
 SCHEMA_FILE_PATH = "config/schema.yaml"
 
-DB_URL = environ["MONGO_DB_URL"]
+DB_URL = os.getenv("MONGO_DB_URL", "")
 TEST_SIZE = 0.2
 
 
@@ -45,3 +45,10 @@ PREPROCESSOR_OBJECT_FILE_NAME = "shipping_preprocessor.pkl"
 MODEL_TRAINER_ARTIFACTS_DIR = "ModelTrainerArtifacts"
 MODEL_FILE_NAME = "shipping_price_model.pkl"
 MODEL_SAVE_FORMAT = ".pkl"
+
+
+# Model Evaluation related constants
+MODEL_EVALUATION_ARTIFACTS_DIR = "ModelEvaluationArtifacts"
+MODEL_EVALUATION_REPORT_FILE_NAME = "model_evaluation_report.yaml"
+MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE: float = 0.02
+

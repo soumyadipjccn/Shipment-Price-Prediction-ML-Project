@@ -36,3 +36,12 @@ class ModelEvaluationArtifacts:
     best_model_score: float = 0.0
     evaluation_report_file_path: str = ""
 
+
+
+@dataclass
+class ModelPusherArtifacts:
+    bucket_name: str
+    s3_model_path: str
+    is_model_pushed: bool
+
+

@@ -37,18 +37,41 @@ class ModelEvaluation:
         """
         Method Name :   get_best_model
 
-        Description :   This method fetches the existing best/production model if available. 
+        Description :   This method fetches the existing best/production model from AWS S3 if available. 
         
         Output      :   Best model object or None 
         """
         logging.info("Entered get_best_model method of ModelEvaluation class")
         try:
-            # If production/previous model exists in target directory or storage, load it
-            # Otherwise return None
-            logging.info("Exited get_best_model method of ModelEvaluation class")
+            from shipment.configuration.s3_operations import S3Operation
+            from shipment.constants import MODEL_PUSHER_BUCKET_NAME, S3_MODEL_KEY_PATH
+
+            bucket_name = getattr(
+                self.model_evaluation_config,
+                "BUCKET_NAME",
+                os.getenv("MODEL_BUCKET_NAME", MODEL_PUSHER_BUCKET_NAME),
+            )
+            s3_model_key = getattr(
+                self.model_evaluation_config, "S3_MODEL_KEY_PATH", S3_MODEL_KEY_PATH
+            )
+
+            s3_op = S3Operation()
+            if s3_op.is_model_present(bucket_name=bucket_name, s3_model_key=s3_model_key):
+                logging.info(
+                    f"Found production model in S3 bucket {bucket_name} at {s3_model_key}"
+                )
+                best_model = s3_op.load_model(
+                    model_name=s3_model_key, bucket_name=bucket_name
+                )
+                return best_model
+
+            logging.info("No production model found in S3 bucket.")
             return None
         except Exception as e:
-            raise shippingException(e, sys) from e
+            logging.warning(
+                f"Could not load best model from S3 (falling back to base score check): {str(e)}"
+            )
+            return None
 
     def initiate_model_evaluation(self) -> ModelEvaluationArtifacts:
         """

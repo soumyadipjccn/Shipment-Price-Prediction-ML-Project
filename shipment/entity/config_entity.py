@@ -134,3 +134,32 @@ class ModelEvaluationConfig:
             else MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE
         )
 
+
+
+@dataclass
+class ModelPusherConfig:
+    def __init__(
+        self,
+        BUCKET_NAME: str = None,
+        S3_MODEL_KEY_PATH: str = None,
+        MODEL_PUSHER_ARTIFACTS_DIR: str = None,
+        UTILS: MainUtils = None,
+    ):
+        self.UTILS = UTILS if UTILS is not None else MainUtils()
+        self.BUCKET_NAME: str = (
+            BUCKET_NAME
+            if BUCKET_NAME is not None
+            else os.getenv("MODEL_BUCKET_NAME", MODEL_PUSHER_BUCKET_NAME)
+        )
+        self.S3_MODEL_KEY_PATH: str = (
+            S3_MODEL_KEY_PATH
+            if S3_MODEL_KEY_PATH is not None
+            else S3_MODEL_KEY_PATH
+        )
+        self.MODEL_PUSHER_ARTIFACTS_DIR: str = (
+            MODEL_PUSHER_ARTIFACTS_DIR
+            if MODEL_PUSHER_ARTIFACTS_DIR is not None
+            else os.path.join(os.getcwd(), ARTIFACTS_DIR, MODEL_PUSHER_ARTIFACTS_DIR)
+        )
+
+

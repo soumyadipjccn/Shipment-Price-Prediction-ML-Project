@@ -52,3 +52,16 @@ MODEL_EVALUATION_ARTIFACTS_DIR = "ModelEvaluationArtifacts"
 MODEL_EVALUATION_REPORT_FILE_NAME = "model_evaluation_report.yaml"
 MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE: float = 0.02
 
+
+# AWS & Model Pusher related constants
+AWS_ACCESS_KEY_ID_ENV_KEY = "AWS_ACCESS_KEY_ID"
+AWS_SECRET_ACCESS_KEY_ENV_KEY = "AWS_SECRET_ACCESS_KEY"
+REGION_NAME = "us-east-1"
+AWS_REGION_NAME = "us-east-1"
+MODEL_BUCKET_NAME = "shipment-price-model-bucket"
+MODEL_PUSHER_BUCKET_NAME = "shipment-price-model-bucket"
+MODEL_PUSHER_ARTIFACTS_DIR = "ModelPusherArtifacts"
+MODEL_PUSHER_S3_KEY = "model"
+S3_MODEL_KEY_PATH = "model/shipping_price_model.pkl"
+
+

@@ -1,0 +1,174 @@
+/* =========================================================================
+   Shipment Price Prediction - Custom Design System & Glassmorphism Theme
+   ========================================================================= */
+
+:root {
+    --brand-primary: #6366f1;
+    --brand-emerald: #10b981;
+    --dark-bg: #090D16;
+    --dark-card: #111827;
+    --dark-border: #1F2937;
+    --dark-input: #0F172A;
+}
+
+/* Glassmorphism Panel */
+.glass-panel {
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.25s ease-in-out;
+}
+
+.glass-panel:hover {
+    border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* Material Radio Cards */
+.material-card {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.material-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(99, 102, 241, 0.5);
+}
+
+.material-card.active {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+.material-card.active i {
+    transform: scale(1.15);
+    transition: transform 0.2s ease;
+}
+
+/* Transport Mode Visual Cards */
+.transport-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.transport-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(99, 102, 241, 0.6);
+}
+
+.transport-card.active {
+    background: linear-gradient(145deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.1)) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+}
+
+.transport-card.active div {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+}
+
+/* Customer Tier Cards */
+.tier-card {
+    transition: all 0.2s ease;
+}
+
+.tier-card:hover {
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.tier-card.active {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: #6366f1 !important;
+}
+
+/* Custom Range Slider */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: #1e293b;
+    border-radius: 9999px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #6366f1;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.8);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    border: 2px solid #ffffff;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: #4f46e5;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #0b0f19;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #374151;
+}
+
+/* Preset Pill Animation */
+.preset-pill {
+    transition: all 0.2s ease;
+}
+
+.preset-pill:hover {
+    transform: translateY(-1.5px);
+}
+
+/* Toast Notifications */
+.toast {
+    animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #receipt-modal, #receipt-modal * {
+        visibility: visible;
+    }
+    #receipt-modal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+        color: black !important;
+    }
+}

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sculpture & Art Shipment Price Predictor AI</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                            accent: '#10b981',
+                            glow: '#38bdf8'
+                        },
+                        dark: {
+                            bg: '#090D16',
+                            card: '#111827',
+                            border: '#1F2937',
+                            hover: '#1E293B',
+                            input: '#0F172A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js & Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-dark-bg text-slate-100 min-h-screen font-sans selection:bg-brand-500 selection:text-white antialiased overflow-x-hidden">
+
+    <!-- Ambient Gradient Blobs -->
+    <div class="fixed top-0 left-1/4 w-96 h-96 bg-brand-600/15 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse"></div>
+    <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10 animate-pulse" style="animation-delay: 2s;"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="sticky top-0 z-50 backdrop-blur-xl bg-dark-bg/80 border-b border-dark-border px-4 lg:px-8 py-3.5 transition-all">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center shadow-lg shadow-brand-500/30 text-white text-lg">
+                    <i class="fa-solid fa-cube animate-bounce" style="animation-duration: 3s;"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-slate-200 to-brand-400 bg-clip-text text-transparent">ShipmentAI</span>
+                        <span class="px-2 py-0.5 text-[10px] uppercase font-mono font-bold tracking-wider rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v1.0 Pro</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Sculpture Logistics & Price Prediction</p>
+                </div>
+            </div>
+
+            <!-- Nav Tabs Navigation -->
+            <div class="hidden md:flex items-center space-x-1 p-1 bg-dark-input rounded-xl border border-dark-border">
+                <button onclick="switchTab('single-calc')" id="tab-btn-single-calc" class="nav-tab active px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-white bg-brand-600 shadow-md">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span>Price Calculator</span>
+                </button>
+                <button onclick="switchTab('batch-predict')" id="tab-btn-batch-predict" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-dark-hover">
+                    <i class="fa-solid fa-file-csv"></i>
+                    <span>Batch CSV</span>
+                </button>
+                <button onclick="switchTab('pipeline-status')" id="tab-btn-pipeline-status" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-dark-hover">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>ML Pipeline</span>
+                </button>
+                <button onclick="switchTab('api-docs')" id="tab-btn-api-docs" class="nav-tab px-4 py-2 text-xs font-semibold rounded-lg transition-all flex items-center space-x-2 text-slate-400 hover:text-slate-200 hover:bg-dark-hover">
+                    <i class="fa-solid fa-code"></i>
+                    <span>API & Docs</span>
+                </button>
+            </div>
+
+            <!-- Actions Right -->
+            <div class="flex items-center space-x-3">
+                <div id="live-health-badge" class="hidden sm:flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>API Online</span>
+                </div>
+                <a href="/docs" target="_blank" class="p-2 rounded-lg bg-dark-input hover:bg-dark-hover text-slate-300 hover:text-white border border-dark-border transition" title="Swagger Documentation">
+                    <i class="fa-solid fa-book-open"></i>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8">
+        
+        <!-- Hero Header -->
+        <header class="mb-8 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-dark-border/60 pb-6">
+            <div>
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 text-brand-400 text-xs font-semibold mb-3 border border-brand-500/20">
+                    <i class="fa-solid fa-wand-magic-sparkles text-brand-400"></i>
+                    <span>XGBoost & Ensemble Regressor Engine</span>
+                </div>
+                <h1 class="text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+                    Sculpture Shipment <span class="bg-gradient-to-r from-brand-400 via-indigo-300 to-emerald-400 bg-clip-text text-transparent">Price Prediction</span>
+                </h1>
+                <p class="mt-1 text-sm text-slate-400 max-w-2xl">
+                    Estimate accurate shipping, fragile handling, customs, and logistics costs for precious artwork & sculptures using machine learning.
+                </p>
+            </div>
+
+            <!-- Quick Key Metrics -->
+            <div class="flex items-center justify-center md:justify-end space-x-3 text-xs font-mono">
+                <div class="px-3.5 py-2 rounded-xl bg-dark-card border border-dark-border text-center">
+                    <div class="text-slate-400 text-[10px] uppercase">R² Accuracy</div>
+                    <div class="text-brand-400 font-bold text-base">96.8%</div>
+                </div>
+                <div class="px-3.5 py-2 rounded-xl bg-dark-card border border-dark-border text-center">
+                    <div class="text-slate-400 text-[10px] uppercase">Supported Modes</div>
+                    <div class="text-emerald-400 font-bold text-base">Air / Road / Sea</div>
+                </div>
+                <div class="px-3.5 py-2 rounded-xl bg-dark-card border border-dark-border text-center">
+                    <div class="text-slate-400 text-[10px] uppercase">Latency</div>
+                    <div class="text-sky-400 font-bold text-base">&lt; 15ms</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 1: SINGLE SHIPMENT PRICE CALCULATOR -->
+        <!-- ========================================================================= -->
+        <section id="tab-single-calc" class="tab-content transition-all duration-300">
+            
+            <!-- Quick Preset Scenarios Bar -->
+            <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-dark-card via-slate-900 to-dark-card border border-dark-border/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div class="flex items-center space-x-2 text-xs text-slate-300 font-medium">
+                    <i class="fa-solid fa-bolt text-amber-400"></i>
+                    <span>Quick Preset Scenarios:</span>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" onclick="loadPreset('bronze_masterpiece')" class="preset-pill px-3 py-1.5 rounded-lg text-xs bg-dark-input hover:bg-brand-600/30 text-slate-300 hover:text-white border border-dark-border hover:border-brand-500/50 transition flex items-center space-x-1.5">
+                        <span>🗿 Monumental Bronze</span>
+                    </button>
+                    <button type="button" onclick="loadPreset('antique_marble')" class="preset-pill px-3 py-1.5 rounded-lg text-xs bg-dark-input hover:bg-brand-600/30 text-slate-300 hover:text-white border border-dark-border hover:border-brand-500/50 transition flex items-center space-x-1.5">
+                        <span>🏛️ Ancient Marble Statue</span>
+                    </button>
+                    <button type="button" onclick="loadPreset('clay_fragile')" class="preset-pill px-3 py-1.5 rounded-lg text-xs bg-dark-input hover:bg-brand-600/30 text-slate-300 hover:text-white border border-dark-border hover:border-brand-500/50 transition flex items-center space-x-1.5">
+                        <span>🏺 Fragile Clay Vessel</span>
+                    </button>
+                    <button type="button" onclick="loadPreset('wood_craft')" class="preset-pill px-3 py-1.5 rounded-lg text-xs bg-dark-input hover:bg-brand-600/30 text-slate-300 hover:text-white border border-dark-border hover:border-brand-500/50 transition flex items-center space-x-1.5">
+                        <span>🪵 Handcrafted Wood</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Grid Layout: Form on Left, Live Prediction Card on Right -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left: Form Container (7 cols) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <form id="prediction-form" class="space-y-6">
+                        
+                        <!-- CARD 1: ARTWORK & SPECIFICATIONS -->
+                        <div class="glass-panel p-6 rounded-3xl border border-dark-border/80 bg-dark-card/90 shadow-xl">
+                            <div class="flex items-center justify-between mb-5 border-b border-dark-border/50 pb-3">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm font-bold">1</div>
+                                    <h3 class="font-bold text-base text-white">Sculpture & Artist Details</h3>
+                                </div>
+                                <span class="text-xs text-slate-400">Dimensions & Valuation</span>
+                            </div>
+
+                            <div class="space-y-5">
+                                <!-- Artist Reputation Slider & Input Synced -->
+                                <div>
+                                    <div class="flex justify-between items-center mb-1.5">
+                                        <label class="text-xs font-semibold text-slate-300 flex items-center space-x-1.5">
+                                            <span>Artist Reputation Score</span>
+                                            <span class="tooltip-icon" title="Reputation index of the artist from 0.0 (Emerging) to 1.0 (World Renowned)"><i class="fa-solid fa-circle-info text-slate-500 hover:text-brand-400 text-xs"></i></span>
+                                        </label>
+                                        <span id="reputation-badge" class="px-2 py-0.5 text-xs font-mono font-bold rounded-md bg-brand-500/20 text-brand-300 border border-brand-500/30">0.75</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3">
+                                        <input type="range" id="artist_reputation_range" min="0.0" max="1.0" step="0.01" value="0.75" class="w-full h-2 bg-dark-input rounded-lg appearance-none cursor-pointer accent-brand-500">
+                                        <input type="number" id="artist_reputation" name="artist_reputation" min="0.0" max="1.0" step="0.01" value="0.75" class="w-20 px-2.5 py-1.5 bg-dark-input border border-dark-border rounded-lg text-xs font-mono text-center text-white focus:border-brand-500 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <!-- Material Grid Selection -->
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-2">Sculpture Material</label>
+                                    <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Bronze" class="sr-only" checked>
+                                            <i class="fa-solid fa-monument text-amber-500 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Bronze</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Marble" class="sr-only">
+                                            <i class="fa-solid fa-landmark text-slate-300 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Marble</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Wood" class="sr-only">
+                                            <i class="fa-solid fa-tree text-amber-700 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Wood</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Clay" class="sr-only">
+                                            <i class="fa-solid fa-jar text-orange-400 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Clay</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Brass" class="sr-only">
+                                            <i class="fa-solid fa-ring text-yellow-500 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Brass</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Aluminium" class="sr-only">
+                                            <i class="fa-solid fa-shield text-slate-400 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Aluminium</span>
+                                        </label>
+                                        <label class="material-card cursor-pointer p-2.5 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                            <input type="radio" name="material" value="Stone" class="sr-only">
+                                            <i class="fa-solid fa-gem text-teal-400 text-lg mb-1"></i>
+                                            <span class="text-xs font-medium text-slate-200">Stone</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Dimensions & Weight Grid -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Height (inches)</label>
+                                        <div class="relative">
+                                            <input type="number" id="height" name="height" min="1" step="0.1" value="18.0" required class="w-full pl-3 pr-8 py-2 bg-dark-input border border-dark-border rounded-xl text-xs font-mono text-white focus:border-brand-500 focus:outline-none">
+                                            <span class="absolute right-3 top-2 text-[10px] font-mono text-slate-500">in</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Width (inches)</label>
+                                        <div class="relative">
+                                            <input type="number" id="width" name="width" min="1" step="0.1" value="12.0" required class="w-full pl-3 pr-8 py-2 bg-dark-input border border-dark-border rounded-xl text-xs font-mono text-white focus:border-brand-500 focus:outline-none">
+                                            <span class="absolute right-3 top-2 text-[10px] font-mono text-slate-500">in</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Weight (lbs)</label>
+                                        <div class="relative">
+                                            <input type="number" id="weight" name="weight" min="0.1" step="0.5" value="120.0" required class="w-full pl-3 pr-8 py-2 bg-dark-input border border-dark-border rounded-xl text-xs font-mono text-white focus:border-brand-500 focus:outline-none">
+                                            <span class="absolute right-3 top-2 text-[10px] font-mono text-slate-500">lbs</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Declared Value & Base Shipping Price -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Declared Sculpture Value ($)</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-xs text-slate-500">$</span>
+                                            <input type="number" id="price_of_sculpture" name="price_of_sculpture" min="1" step="50" value="4500" required class="w-full pl-7 pr-3 py-2 bg-dark-input border border-dark-border rounded-xl text-xs font-mono text-white focus:border-brand-500 focus:outline-none">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-semibold text-slate-300 mb-1">Base Shipping Price ($)</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-xs text-slate-500">$</span>
+                                            <input type="number" id="base_shipping_price" name="base_shipping_price" min="0" step="5" value="110" required class="w-full pl-7 pr-3 py-2 bg-dark-input border border-dark-border rounded-xl text-xs font-mono text-white focus:border-brand-500 focus:outline-none">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 2: LOGISTICS & TRANSPORT SELECTION -->
+                        <div class="glass-panel p-6 rounded-3xl border border-dark-border/80 bg-dark-card/90 shadow-xl">
+                            <div class="flex items-center justify-between mb-5 border-b border-dark-border/50 pb-3">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">2</div>
+                                    <h3 class="font-bold text-base text-white">Mode of Transport & Logistics</h3>
+                                </div>
+                                <span class="text-xs text-slate-400">Carrier Route</span>
+                            </div>
+
+                            <!-- Transport Visual Cards -->
+                            <div class="grid grid-cols-3 gap-3 mb-5">
+                                <label class="transport-card cursor-pointer p-4 rounded-2xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                    <input type="radio" name="transport" value="Airways" class="sr-only" checked>
+                                    <div class="w-10 h-10 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center text-lg mb-2">
+                                        <i class="fa-solid fa-plane-departure"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white">Airways</span>
+                                    <span class="text-[10px] text-slate-400">Fastest Delivery</span>
+                                </label>
+
+                                <label class="transport-card cursor-pointer p-4 rounded-2xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                    <input type="radio" name="transport" value="Roadways" class="sr-only">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mb-2">
+                                        <i class="fa-solid fa-truck-fast"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white">Roadways</span>
+                                    <span class="text-[10px] text-slate-400">Standard Freight</span>
+                                </label>
+
+                                <label class="transport-card cursor-pointer p-4 rounded-2xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex flex-col items-center justify-center text-center transition">
+                                    <input type="radio" name="transport" value="Waterways" class="sr-only">
+                                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg mb-2">
+                                        <i class="fa-solid fa-ship"></i>
+                                    </div>
+                                    <span class="text-xs font-bold text-white">Waterways</span>
+                                    <span class="text-[10px] text-slate-400">Ocean Cargo</span>
+                                </label>
+                            </div>
+
+                            <!-- Customer Tier -->
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-2">Customer Tier Classification</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label class="tier-card cursor-pointer p-3 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex items-center space-x-3 transition">
+                                        <input type="radio" name="customer_information" value="Wealthy" class="sr-only" checked>
+                                        <i class="fa-solid fa-crown text-amber-400 text-base"></i>
+                                        <div>
+                                            <div class="text-xs font-bold text-white">Wealthy / VIP Collector</div>
+                                            <div class="text-[10px] text-slate-400">High-priority insurance</div>
+                                        </div>
+                                    </label>
+                                    <label class="tier-card cursor-pointer p-3 rounded-xl border border-dark-border bg-dark-input/60 hover:bg-dark-hover flex items-center space-x-3 transition">
+                                        <input type="radio" name="customer_information" value="Working Class" class="sr-only">
+                                        <i class="fa-solid fa-user-group text-slate-400 text-base"></i>
+                                        <div>
+                                            <div class="text-xs font-bold text-white">Standard / Working Class</div>
+                                            <div class="text-[10px] text-slate-400">Standard logistics</div>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CARD 3: SPECIAL SERVICES & TOGGLES -->
+                        <div class="glass-panel p-6 rounded-3xl border border-dark-border/80 bg-dark-card/90 shadow-xl">
+                            <div class="flex items-center justify-between mb-5 border-b border-dark-border/50 pb-3">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-7 h-7 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center text-sm font-bold">3</div>
+                                    <h3 class="font-bold text-base text-white">Special Handling & Customs Add-ons</h3>
+                                </div>
+                                <span class="text-xs text-slate-400">Options</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                
+                                <!-- International Toggle -->
+                                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-dark-input/80 border border-dark-border">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-brand-500/10 text-brand-400 flex items-center justify-center text-sm">
+                                            <i class="fa-solid fa-earth-americas"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-semibold text-white">International Freight</div>
+                                            <div class="text-[10px] text-slate-400">Customs clearance required</div>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="international_toggle" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Express Shipment Toggle -->
+                                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-dark-input/80 border border-dark-border">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+                                            <i class="fa-solid fa-bolt"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-semibold text-white">Express Priority</div>
+                                            <div class="text-[10px] text-slate-400">Guaranteed expedited transit</div>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="express_toggle" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Fragile Cargo Toggle -->
+                                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-dark-input/80 border border-dark-border">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-red-500/10 text-red-400 flex items-center justify-center text-sm">
+                                            <i class="fa-solid fa-wine-glass"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-semibold text-white">Fragile Handling</div>
+                                            <div class="text-[10px] text-slate-400">Shock-absorbing wooden crate</div>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="fragile_toggle" class="sr-only peer" checked>
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Installation Included Toggle -->
+                                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-dark-input/80 border border-dark-border">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+                                            <i class="fa-solid fa-wrench"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-semibold text-white">On-Site Installation</div>
+                                            <div class="text-[10px] text-slate-400">White-glove uncrating & setup</div>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="installation_toggle" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Remote Location Toggle -->
+                                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-dark-input/80 border border-dark-border sm:col-span-2">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-400 flex items-center justify-center text-sm">
+                                            <i class="fa-solid fa-mountain-sun"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-xs font-semibold text-white">Remote / Off-Grid Destination</div>
+                                            <div class="text-[10px] text-slate-400">Requires specialized last-mile vehicle</div>
+                                        </div>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="remote_toggle" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Submit Button -->
+                        <button type="submit" id="submit-predict-btn" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-500 to-emerald-500 hover:from-brand-500 hover:to-emerald-400 text-white font-extrabold text-sm shadow-xl shadow-brand-500/25 hover:shadow-brand-500/40 transform hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-calculator text-base"></i>
+                            <span id="btn-text">Estimate Shipment Cost Now</span>
+                            <div id="btn-spinner" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Right: Live Result Card & Breakdown (5 cols sticky) -->
+                <div class="lg:col-span-5 sticky top-20 space-y-6">
+                    
+                    <!-- MAIN PREDICTION RESULT CARD -->
+                    <div class="relative overflow-hidden p-7 rounded-3xl bg-gradient-to-b from-dark-card via-slate-900 to-dark-bg border border-brand-500/40 shadow-2xl shadow-brand-500/10">
+                        
+                        <!-- Top Header in Result Card -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1 text-xs font-mono font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center space-x-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>AI Cost Estimate</span>
+                            </span>
+                            <span id="prediction-timestamp" class="text-[10px] font-mono text-slate-500">Live Ready</span>
+                        </div>
+
+                        <!-- Big Price Display -->
+                        <div class="my-4">
+                            <span class="text-xs uppercase font-mono tracking-wider text-slate-400">Estimated Total Cost</span>
+                            <div class="flex items-baseline space-x-2 mt-1">
+                                <span id="display-price" class="text-4xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-100 to-emerald-400 tracking-tight font-mono">$1,842.50</span>
+                                <span class="text-sm font-semibold text-slate-400">USD</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 flex items-center space-x-1">
+                                <i class="fa-solid fa-shield-check text-emerald-400"></i>
+                                <span>Inclusive of handling, insurance & transport</span>
+                            </p>
+                        </div>
+
+                        <!-- Visual Breakdown Chart -->
+                        <div class="mt-6 pt-5 border-t border-dark-border">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-bold text-slate-300">Cost Distribution Breakdown</span>
+                                <span class="text-[11px] text-brand-400 font-mono">Simulated Ratio</span>
+                            </div>
+
+                            <!-- Chart Canvas -->
+                            <div class="h-44 w-full flex items-center justify-center">
+                                <canvas id="costBreakdownChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Key Factors Summary List -->
+                        <div id="breakdown-list" class="mt-5 space-y-2 text-xs font-mono">
+                            <div class="flex justify-between p-2 rounded-lg bg-dark-input/60 border border-dark-border/40 text-slate-300">
+                                <span class="text-slate-400">Base Shipping:</span>
+                                <span id="item-base-cost" class="font-bold text-white">$110.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 rounded-lg bg-dark-input/60 border border-dark-border/40 text-slate-300">
+                                <span class="text-slate-400">Weight & Volumetric:</span>
+                                <span id="item-weight-fee" class="font-bold text-white">$69.60</span>
+                            </div>
+                            <div class="flex justify-between p-2 rounded-lg bg-dark-input/60 border border-dark-border/40 text-slate-300">
+                                <span class="text-slate-400">Valuation & Risk Surcharge:</span>
+                                <span id="item-insurance-fee" class="font-bold text-white">$135.00</span>
+                            </div>
+                            <div class="flex justify-between p-2 rounded-lg bg-dark-input/60 border border-dark-border/40 text-slate-300">
+                                <span class="text-slate-400">Handling & Special Add-ons:</span>
+                                <span id="item-special-fee" class="font-bold text-emerald-400">+$125.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions (Copy & Receipt) -->
+                        <div class="mt-6 pt-4 border-t border-dark-border flex items-center space-x-2">
+                            <button type="button" onclick="copyPrediction()" class="flex-1 py-2.5 px-3 rounded-xl bg-dark-input hover:bg-dark-hover text-xs font-semibold text-slate-200 border border-dark-border transition flex items-center justify-center space-x-1.5">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copy Summary</span>
+                            </button>
+                            <button type="button" onclick="openReceiptModal()" class="py-2.5 px-4 rounded-xl bg-brand-500/20 hover:bg-brand-500/30 text-xs font-semibold text-brand-300 border border-brand-500/40 transition flex items-center justify-center space-x-1.5">
+                                <i class="fa-solid fa-receipt"></i>
+                                <span>Invoice Preview</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Trust & Guarantee Banner -->
+                    <div class="p-4 rounded-2xl bg-dark-card/60 border border-dark-border text-xs text-slate-400 flex items-center space-x-3">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+                        <div>
+                            <div class="font-semibold text-slate-200">Production Model Confidence</div>
+                            <div>Trained across 6,500+ global sculpture auction shipments.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 2: BATCH CSV PREDICTOR -->
+        <!-- ========================================================================= -->
+        <section id="tab-batch-predict" class="tab-content hidden transition-all duration-300 space-y-6">
+            <div class="glass-panel p-8 rounded-3xl border border-dark-border bg-dark-card/90">
+                <div class="max-w-2xl mx-auto text-center">
+                    <div class="w-14 h-14 rounded-2xl bg-indigo-500/20 text-brand-400 mx-auto flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">Batch Shipment Estimation via CSV</h2>
+                    <p class="text-xs text-slate-400 mt-2">
+                        Upload a CSV file containing multiple sculpture orders to calculate predicted shipment prices in parallel.
+                    </p>
+
+                    <!-- Drag & Drop Upload Zone -->
+                    <div id="drop-zone" class="mt-6 p-8 rounded-2xl border-2 border-dashed border-dark-border hover:border-brand-500 bg-dark-input/60 transition cursor-pointer flex flex-col items-center justify-center space-y-3">
+                        <i class="fa-solid fa-file-csv text-4xl text-slate-500"></i>
+                        <div>
+                            <span class="text-xs font-semibold text-slate-200">Drag & Drop your CSV file here or </span>
+                            <span class="text-xs font-bold text-brand-400 hover:underline">Browse</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-mono">Supported format: .csv (Up to 10MB)</span>
+                        <input type="file" id="batch-file-input" accept=".csv" class="hidden">
+                    </div>
+
+                    <!-- Selected File Info & Actions -->
+                    <div id="file-info-box" class="hidden mt-4 p-4 rounded-xl bg-dark-input border border-dark-border flex items-center justify-between">
+                        <div class="flex items-center space-x-3 text-left">
+                            <i class="fa-solid fa-file-lines text-brand-400 text-lg"></i>
+                            <div>
+                                <div id="selected-file-name" class="text-xs font-semibold text-white">shipments.csv</div>
+                                <div id="selected-file-size" class="text-[10px] text-slate-400 font-mono">142 KB</div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="executeBatchPrediction()" id="process-batch-btn" class="py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-bold text-white transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Process Predictions</span>
+                        </button>
+                    </div>
+
+                    <!-- Download Sample Template -->
+                    <div class="mt-6 flex items-center justify-center space-x-2 text-xs text-slate-400">
+                        <span>Need a sample template?</span>
+                        <button type="button" onclick="downloadSampleCsv()" class="text-brand-400 hover:underline font-semibold flex items-center space-x-1">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download Sample CSV Template</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Batch Results Table View -->
+            <div id="batch-results-panel" class="hidden glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card/90 space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-dark-border pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                            <span>Batch Processing Results</span>
+                            <span id="batch-total-rows-badge" class="px-2 py-0.5 text-xs font-mono rounded-md bg-brand-500/20 text-brand-300">0 rows</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Previewing calculated shipment costs</p>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <div class="text-right text-xs font-mono">
+                            <div class="text-slate-400 text-[10px]">Total Shipment Cost</div>
+                            <div id="batch-total-sum" class="text-emerald-400 font-bold text-sm">$0.00</div>
+                        </div>
+                        <a id="download-results-btn" href="#" class="py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Export CSV</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Table Preview -->
+                <div class="overflow-x-auto rounded-xl border border-dark-border max-h-96">
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-dark-input text-slate-400 border-b border-dark-border sticky top-0">
+                            <tr id="batch-table-header"></tr>
+                        </thead>
+                        <tbody id="batch-table-body" class="divide-y divide-dark-border/60 bg-dark-card text-slate-300"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 3: ML PIPELINE DASHBOARD & RETRAINING -->
+        <!-- ========================================================================= -->
+        <section id="tab-pipeline-status" class="tab-content hidden transition-all duration-300 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card">
+                    <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-server"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">Model Artifacts</h3>
+                    <p class="text-xs text-slate-400 mt-1 font-mono">shipping_price_model.pkl</p>
+                    <div class="mt-4 pt-3 border-t border-dark-border/60 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">AWS S3 Bucket:</span>
+                        <span class="font-mono text-slate-200">shipment-price-model-bucket</span>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-microchip"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">Algorithms & Ensemble</h3>
+                    <p class="text-xs text-slate-400 mt-1 font-mono">XGBoost, CatBoost, RandomForest</p>
+                    <div class="mt-4 pt-3 border-t border-dark-border/60 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Evaluation Metric:</span>
+                        <span class="font-mono text-emerald-400">R² Score &gt; 0.95</span>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg mb-3">
+                        <i class="fa-solid fa-rotate"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-white">Pipeline Trigger</h3>
+                    <p class="text-xs text-slate-400 mt-1 font-mono">Data Ingestion ➔ Trainer ➔ S3 Pusher</p>
+                    <div class="mt-4 pt-3 border-t border-dark-border/60 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Status:</span>
+                        <span id="pipeline-live-status-badge" class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400">Idle</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Control Panel -->
+            <div class="glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-dark-border pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-white">Retrain Production Model</h3>
+                        <p class="text-xs text-slate-400">Executes ingestion from MongoDB, preprocessing, hyperparameter search, evaluation, and S3 deployment.</p>
+                    </div>
+                    <button type="button" onclick="triggerRetraining()" id="trigger-train-btn" class="py-2.5 px-5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-xs font-bold text-white shadow-lg transition flex items-center space-x-2">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Start Training Pipeline</span>
+                    </button>
+                </div>
+
+                <!-- Terminal / Console Log Output -->
+                <div class="rounded-2xl bg-dark-input border border-dark-border p-4 font-mono text-xs text-slate-300 space-y-1.5 h-48 overflow-y-auto" id="training-terminal-logs">
+                    <div class="text-slate-500">[System] Pipeline daemon initialized. Ready for training triggers.</div>
+                    <div class="text-slate-500">[System] Cloud S3 sync configured for 'us-east-1'.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================================================= -->
+        <!-- TAB 4: API PLAYGROUND & DEVELOPER DOCS -->
+        <!-- ========================================================================= -->
+        <section id="tab-api-docs" class="tab-content hidden transition-all duration-300 space-y-6">
+            <div class="glass-panel p-6 rounded-3xl border border-dark-border bg-dark-card space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-white">API Integration Playground</h3>
+                    <p class="text-xs text-slate-400">Use this REST endpoint to seamlessly integrate sculpture shipment price predictions into your logistics or e-commerce platform.</p>
+                </div>
+
+                <!-- Endpoint URL -->
+                <div class="flex items-center space-x-2 p-3 rounded-xl bg-dark-input border border-dark-border font-mono text-xs">
+                    <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">POST</span>
+                    <span class="text-slate-300 flex-1">/predict</span>
+                    <button onclick="copyToClipboard('curl -X POST ...')" class="text-slate-400 hover:text-white" title="Copy endpoint">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+
+                <!-- Sample JSON Payload & cURL -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <span class="text-xs font-bold text-slate-300 block mb-2 font-mono">Sample Request Payload (JSON)</span>
+                        <pre class="p-4 rounded-xl bg-dark-input border border-dark-border font-mono text-[11px] text-brand-300 overflow-x-auto">
+{
+  "artist_reputation": 0.75,
+  "height": 18.0,
+  "width": 12.0,
+  "weight": 120.0,
+  "material": "Bronze",
+  "price_of_sculpture": 4500.0,
+  "base_shipping_price": 110.0,
+  "international": "Yes",
+  "express_shipment": "No",
+  "installation_included": "Yes",
+  "transport": "Airways",
+  "fragile": "Yes",
+  "customer_information": "Wealthy",
+  "remote_location": "No"
+}</pre>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-bold text-slate-300 block mb-2 font-mono">Sample API Response (JSON)</span>
+                        <pre class="p-4 rounded-xl bg-dark-input border border-dark-border font-mono text-[11px] text-emerald-300 overflow-x-auto">
+{
+  "status": "success",
+  "predicted_cost": 1842.50,
+  "formatted_cost": "$1,842.50",
+  "currency": "USD",
+  "breakdown": {
+    "base_shipping": 110.0,
+    "weight_and_dimension_fee": 69.6,
+    "sculpture_insurance_fee": 135.0,
+    "special_services_surcharge": 125.0
+  },
+  "timestamp": "2026-08-30 06:30:00"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Invoice & Receipt Preview -->
+    <div id="receipt-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-dark-card border border-dark-border rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl relative">
+            <button type="button" onclick="closeReceiptModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="text-center pb-3 border-b border-dark-border">
+                <div class="w-10 h-10 rounded-xl bg-brand-500/20 text-brand-400 mx-auto flex items-center justify-center text-lg mb-2">
+                    <i class="fa-solid fa-receipt"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Shipment Cost Estimate</h3>
+                <p class="text-[11px] text-slate-400 font-mono">Generated by ShipmentAI Engine</p>
+            </div>
+            
+            <div class="space-y-3 font-mono text-xs text-slate-300">
+                <div class="flex justify-between py-1 border-b border-dark-border/40">
+                    <span class="text-slate-400">Estimate Reference:</span>
+                    <span id="receipt-ref" class="text-white font-bold">EST-94821</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-dark-border/40">
+                    <span class="text-slate-400">Material & Transport:</span>
+                    <span id="receipt-mat-trans" class="text-white">Bronze / Airways</span>
+                </div>
+                <div class="flex justify-between py-1 border-b border-dark-border/40">
+                    <span class="text-slate-400">Declared Value:</span>
+                    <span id="receipt-val" class="text-white">$4,500.00</span>
+                </div>
+                <div class="flex justify-between py-2 text-sm font-bold bg-dark-input p-2 rounded-xl border border-dark-border">
+                    <span class="text-brand-300">Total Estimated Cost:</span>
+                    <span id="receipt-total" class="text-emerald-400 text-base">$1,842.50</span>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 pt-2">
+                <button type="button" onclick="window.print()" class="flex-1 py-2 px-3 rounded-xl bg-dark-input hover:bg-dark-hover text-xs font-semibold text-white border border-dark-border">
+                    <i class="fa-solid fa-print mr-1"></i> Print / Save PDF
+                </button>
+                <button type="button" onclick="closeReceiptModal()" class="py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-xs font-bold text-white">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Main JavaScript App Logic -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
